@@ -5,6 +5,9 @@ var carm_motrek = carm_motrek || (function() {
   var script_name = "carm::motrek";
   var cmd = "mo";
 
+  // set to false if not using https://github.com/Roll20/roll20-character-sheets/tree/master/Star%20Trek%20Adventures%20Official as char sheet
+  var use_strek_display_template = true;
+
   // default state
   var state_shape = {
     val: 0,
@@ -65,25 +68,29 @@ var carm_motrek = carm_motrek || (function() {
   }
 
   function showMoString() {
-    var display = "\
-    <table border='1' width='100%' style='border-collapse: collapse;'>\
-      <thead>\
-        <tr>\
-          <td colspan='4' align='center' style='background-color: #2f507c'><h3 style='color: #fff !important;'>Momentum</h3></td>\
-        </tr>\
-      </thead>\
-      <tbody>\
-        <tr>\
-          <td width='30%' align='right' style='padding-right: .25em;'><strong>Current:</strong></td>\
-          <td width='20%' align='center' style='background-color: #bcffc5'>" + getStateVal() + "</td>\
-          <td width='30%' align='right' style='padding-right: .25em;'><strong>Max:</strong></td>\
-          <td width='20%' align='center'>" + getStateMaxMo() + "</td>\
-        </tr>\
-      </tbody>\
-    </table>\
-    ";
+    if (use_strek_display_template) {
+      _sendChat("&{template:strek}{{rollname=" + getStateVal() + " / " + getStateMaxMo() + "}}{{attribute=Current Momentum}}")
+    } else {
+      var display = "\
+      <table border='1' width='100%' style='border-collapse: collapse;'>\
+        <thead>\
+          <tr>\
+            <td colspan='4' align='center' style='background-color: #2f507c'><h3 style='color: #fff !important;'>Momentum</h3></td>\
+          </tr>\
+        </thead>\
+        <tbody>\
+          <tr>\
+            <td width='30%' align='right' style='padding-right: .25em;'><strong>Current:</strong></td>\
+            <td width='20%' align='center' style='background-color: #bcffc5'>" + getStateVal() + "</td>\
+            <td width='30%' align='right' style='padding-right: .25em;'><strong>Max:</strong></td>\
+            <td width='20%' align='center'>" + getStateMaxMo() + "</td>\
+          </tr>\
+        </tbody>\
+      </table>\
+      ";
 
-    _sendChat("/direct " + display);
+      _sendChat("/direct " + display);
+    }
   }
 
   function displayOriginalCommand(msg) {
