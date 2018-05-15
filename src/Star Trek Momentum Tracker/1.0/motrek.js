@@ -65,21 +65,19 @@ var carm_motrek = carm_motrek || (function() {
     <table border='1' width='100%' style='border-collapse: collapse;'>\
       <thead>\
         <tr>\
-          <td colspan='2' align='center'><h2>Momentum</h2></td>\
+          <td colspan='4' align='center' style='background-color: #2f507c'><h3 style='color: #fff !important;'>Momentum</h3></td>\
         </tr>\
       </thead>\
       <tbody>\
         <tr>\
-          <td align='right' width='40%' style='padding-right: 1em;'><strong>Current:</strong></td>\
-          <td style='padding-left: 1em;'>" + getStateVal() + "</td>\
-        </tr>\
-        <tr>\
-          <td align='right' style='padding-right: 1em;'><strong>Max:</strong></td>\
-          <td style='padding-left: 1em;'>" + getStateMaxMo() + "</td>\
+          <td width='30%' align='right' style='padding-right: .25em;'><strong>Current:</strong></td>\
+          <td width='20%' align='center' style='background-color: #bcffc5'>" + getStateVal() + "</td>\
+          <td width='30%' align='right' style='padding-right: .25em;'><strong>Max:</strong></td>\
+          <td width='20%' align='center'>" + getStateMaxMo() + "</td>\
         </tr>\
       </tbody>\
     </table>\
-";
+    ";
 
     _sendChat("/direct " + display);
   }
@@ -93,12 +91,18 @@ var carm_motrek = carm_motrek || (function() {
 
   // commands
   function commHelp(p0) {
-    _sendChat("--- help ---");
-    _sendChat("> !mo help -- this!");
-    _sendChat("> !mo ? -- show current momentum");
-    _sendChat("> !mo +# -- add # to the current momentum");
-    _sendChat("> !mo -# -- subtract # from the current momentum");
-    _sendChat("> !mo =# -- set momentum to #");
+    var display = "\
+      <h3> " + script_name + " Help </h3>\
+      <ul>\
+        <li><code>!mo help</code> this!</li>\
+        <li><code>!mo ?</code> show current momentum</li>\
+        <li><code>!mo +#</code> add # to the current momentum</li>\
+        <li><code>!mo -#</code> subtract # from the current momentum</li>\
+        <li><code>!mo =#</code> set momentum to #</li>\
+      </ul>\
+    ";
+
+    sendChat("HALP PLS", "/direct " + display);
   }
 
   function validateValue() {
