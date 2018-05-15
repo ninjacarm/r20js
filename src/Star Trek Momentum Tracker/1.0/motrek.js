@@ -159,12 +159,7 @@ var carm_motrek = carm_motrek || (function() {
     onReady: function() {
       _log("*** INIT " + script_name + " ***");
 
-      if (!state.carm_motrek
-          || !state.carm_motrek.val
-          || !state.carm_motrek.maxMo
-      ) {
-        _sendChat("Resetting momentum data...");
-        _sendChat("Old Momentum Values: " + getMoString());
+      if (!state.carm_motrek) {
         state.carm_motrek = state_shape;
         _log("Created state object.");
         _sendChat("Finished Reset.");
