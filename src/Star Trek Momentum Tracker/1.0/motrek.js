@@ -1,7 +1,7 @@
 var carm_motrek = carm_motrek || (function() {
   'use strict';
 
-  // name of this script
+  // name of this script and command to use
   var script_name = "carm::motrek";
   var cmd = "mo";
 
@@ -28,6 +28,10 @@ var carm_motrek = carm_motrek || (function() {
   function _exception(err) {
     _error(err.message);
     _log("EXCEPTION: " + err.message + "\nSTACK: " + err.stack);
+  }
+
+  function getCmd(s) {
+    return "!" + cmd + (s ? " " + s : "");
   }
 
   // mod state
@@ -94,11 +98,11 @@ var carm_motrek = carm_motrek || (function() {
     var display = "\
       <h3> " + script_name + " Help </h3>\
       <ul>\
-        <li><code>!mo help</code> this!</li>\
-        <li><code>!mo ?</code> show current momentum</li>\
-        <li><code>!mo +#</code> add # to the current momentum</li>\
-        <li><code>!mo -#</code> subtract # from the current momentum</li>\
-        <li><code>!mo =#</code> set momentum to #</li>\
+        <li><code>" + getCmd("help") + "</code> this!</li>\
+        <li><code>" + getCmd("?") + "</code> show current momentum</li>\
+        <li><code>" + getCmd("+#") + "</code> add # to the current momentum</li>\
+        <li><code>" + getCmd("-#") + "</code> subtract # from the current momentum</li>\
+        <li><code>" + getCmd("=#") + "</code> set momentum to #</li>\
       </ul>\
     ";
 
@@ -111,7 +115,7 @@ var carm_motrek = carm_motrek || (function() {
 
     if (cur > max) {
       var extra = cur - max;
-      _sendChat("/direct Already at maximum momentum, you have <code>" + extra + "</code> bonus momentum to use.")
+      _sendChat("/direct Already at maximum momentum, you have <strong><code>" + extra + "</code></strong> bonus momentum to use.")
       setStateVal(max);
 
       return;
@@ -183,7 +187,7 @@ var carm_motrek = carm_motrek || (function() {
       }
 
       if (params.length != 1) {
-        _error("Invalid number of parameters given, see !mo help.");
+        _error("Invalid number of parameters given, try <code>" + getCmd("help") + ".</code>");
         return;
       }
 
@@ -201,6 +205,8 @@ var carm_motrek = carm_motrek || (function() {
         commSubValue(p0);
       } else if (p0 === "?") {
         commDisplayValue(p0);
+      } else {
+        _error("Invalid command given <code>" + p0 + "</code>, try <code>" + getCmd("help") + ".</code>");
       }
     },
   };
