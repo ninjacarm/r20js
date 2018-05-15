@@ -1,0 +1,14 @@
+{
+  "name": "Star Trek Momentum Tracker",
+  "script": "motrek.js",
+  "version": "1.0",
+  "previousversions": [],
+  "description": "Provides a chat bot to track momentum, access with !mo help for info",
+  "authors": "Carm",
+  "roll20userid": "4518",
+  "patreon": "",
+  "useroptions": [],
+  "dependencies": ["splitArgs"],
+  "modifies": {},
+  "conflicts": []
+}
