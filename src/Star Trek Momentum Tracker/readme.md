@@ -18,7 +18,7 @@ uses or removes the number of momentum specified by `<val>`, ex: to use 1 use `!
 
 # maths momentum
 
-`!mo +-1+4-2`
+`!mo +-1+4-2`    
 `!mo -1+4-2`
 
 both will correctly evaluate `-1 + 4 - 2 = 1` and add one to the current value

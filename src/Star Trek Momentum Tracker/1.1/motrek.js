@@ -39,14 +39,62 @@ var carm_motrek = carm_motrek || (function() {
 
   // mod state
   function parseParam(param) {
-    return parseInt(param.substring(1), 10);
+    //return parseInt(param.substring(1), 10);
+    return parseAsMath(param.substring(1));
+  }
+
+  function parseAsMath(expr) {
+    var chars = expr.split("");
+    var n = [], op = [], index = 0, oplast = true;
+
+    n[index] = "";
+
+    // Parse the expression
+    for (var c = 0; c < chars.length; c++) {
+      if (isNaN(parseInt(chars[c])) && chars[c] !== "." && !oplast) {
+        op[index] = chars[c];
+        index++;
+        n[index] = "";
+        oplast = true;
+      } else {
+        n[index] += chars[c];
+        oplast = false;
+      }
+    }
+
+    // Calculate the expression
+    expr = parseFloat(n[0]);
+    for (var o = 0; o < op.length; o++) {
+      var num = parseFloat(n[o + 1]);
+      switch (op[o]) {
+        case "+":
+          expr = expr + num;
+          break;
+        case "-":
+          expr = expr - num;
+          break;
+        // TODO should follow order of ops...but...meh
+        case "*":
+          expr = expr * num;
+          break;
+        case "/":
+          expr = expr / num;
+          break;
+      }
+    }
+    return expr;
   }
 
   function setStateVal(val) {
+    if (isNaN(val)) {
+      _sendChat("/direct ERROR: Invalid command, please check what you wrote is valid and try again.")
+      return null;
+    }
+
     _log("set state.val to: " + val);
     state.carm_motrek.val = val;
 
-    validateValue();
+    return validateValue();
   }
 
   function getStateVal() {
@@ -93,7 +141,15 @@ var carm_motrek = carm_motrek || (function() {
     }
   }
 
-  function displayOriginalCommand(msg) {
+  function displayOriginalCommandWithResult(msg, val) {
+    sendChat(
+      "player|" + msg.playerid,
+      // https://unicode-table.com/en/sets/arrows-symbols/
+      "/direct <code>" + msg.content + "</code><strong>➔</strong><code>" + val + "</code>"
+    );
+  }
+
+  function displayOriginalCommand(msg, val) {
     sendChat(
       "player|" + msg.playerid,
       "/direct <code>" + msg.content + "</code>"
@@ -103,57 +159,84 @@ var carm_motrek = carm_motrek || (function() {
   // commands
   function commHelp(p0) {
     var display = "\
-      <h3> " + script_name + " Help </h3>\
+      <pre> HALP PLS FOR " + script_name + " </pre>\
+      <h4>Commands</h4>\
       <ul>\
         <li><code>" + getCmd("help") + "</code> this!</li>\
         <li><code>" + getCmd("?") + "</code> show current momentum</li>\
-        <li><code>" + getCmd("+#") + "</code> add # to the current momentum</li>\
-        <li><code>" + getCmd("-#") + "</code> subtract # from the current momentum</li>\
-        <li><code>" + getCmd("=#") + "</code> set momentum to #</li>\
+        <li><code>" + getCmd("+#") + "</code> add <code>#</code> to the current momentum</li>\
+        <li><code>" + getCmd("-#") + "</code> subtract <code>#</code> from the current momentum</li>\
+        <li><code>" + getCmd("=#") + "</code> set momentum to <code>#</code></li>\
+      </ul>\
+      <h4>Sample Usage</h4>\
+      <ul>\
+        <li><code>" + getCmd("=1") + "</code> -- overrides and sets current value to <code>1</code></li>\
+        <li><code>" + getCmd("+5") + "</code> -- adds <code>5</code> to current value. If it goes over <code>" + getStateMaxMo() + "</code>, automatically displays bonus momentum.</li>\
+        <li><code>" + getCmd("-3") + "</code> -- adds <code>5</code> to current value</li>\
+        <li><code>" + getCmd("+-1+4-2") + "</code> -- calculates <code>-1+4-2=1</code> and adds one to current value</li>\
+        <li><code>" + getCmd("-1+4-2") + "</code> -- same as above</li>\
+        <li><code>" + getCmd("=-1+4-2") + "</code> -- calculate and set current value to <code>1</code></li>\
       </ul>\
     ";
 
-    sendChat("HALP PLS", "/direct " + display);
+    sendChat(script_name, "/direct " + display);
   }
 
+  // returns retStruct format
   function validateValue() {
     var cur = getStateVal();
     var max = getStateMaxMo();
 
+    if (isNaN(cur)) {
+      return "ERROR: Invalid command, please check what you wrote is valid and try again.";
+    }
+
     if (cur > max) {
       var extra = cur - max;
-      _sendChat("/direct Already at maximum momentum, you have <strong><code>" + extra + "</code></strong> bonus momentum to use.")
       setStateVal(max);
 
-      return;
+      return "Already at maximum momentum, you have <strong><code>" + extra + "</code></strong> bonus momentum to use.";
     }
 
     if (cur < 0) {
-      _sendChat("/direct Can't have less than <code>0</code> momentum, setting to 0.");
       setStateVal(0);
 
+      return "Can't have less than <code>0</code> momentum, setting to 0 instead of <strong><code>" + cur + "</code></strong>.";
+    }
+
+    return null;
+  }
+
+  function displayValidateMessage(rs) {
+    _log("displayValidateMessage");
+    _log(rs);
+
+    if (rs == null) {
+      return;
+    }
+
+    if (rs.length > 0) {
+      _log("Validate: " + rs);
+      _sendChat("/direct " + rs)
       return;
     }
   }
 
-  function commSetValue(p0) {
+  function commSetValue(p0, msg) {
     var val = parseParam(p0);
-    setStateVal(val);
+    var rs = setStateVal(val);
 
+    displayOriginalCommandWithResult(msg, val);
+    displayValidateMessage(rs);
     showMoString();
   }
 
-  function commAddValue(p0) {
+  function commAddValue(p0, msg) {
     var val = parseParam(p0);
-    setStateVal(getStateVal() + val);
+    var rs = setStateVal(getStateVal() + val);
 
-    showMoString();
-  }
-
-  function commSubValue(p0) {
-    var val = parseParam(p0);
-    setStateVal(getStateVal() - val);
-
+    displayOriginalCommandWithResult(msg, val);
+    displayValidateMessage(rs);
     showMoString();
   }
 
@@ -172,8 +255,9 @@ var carm_motrek = carm_motrek || (function() {
         _sendChat("Finished Reset.");
       }
 
-      validateValue();
+      var rs = validateValue();
       showMoString();
+      displayValidateMessage(rs);
     },
 
     onChatMessage: function(msg) {
@@ -193,18 +277,17 @@ var carm_motrek = carm_motrek || (function() {
         return;
       }
 
-      displayOriginalCommand(msg);
-
       var p0 = params[0].toLowerCase();
 
       if (p0.toLowerCase() === "help") {
+        displayOriginalCommand(msg);
         commHelp(p0);
       } else if (p0.startsWith("=")) {
-        commSetValue(p0);
+        commSetValue(p0, msg);
       } else if (p0.startsWith("+")) {
-        commAddValue(p0);
+        commAddValue(p0, msg);
       } else if (p0.startsWith("-")) {
-        commSubValue(p0);
+        commAddValue("+" + p0, msg);
       } else if (p0 === "?") {
         commDisplayValue(p0);
       } else {
